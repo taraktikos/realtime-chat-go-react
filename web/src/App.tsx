@@ -1,28 +1,51 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {Component} from 'react';
+import {connect, sendMsg} from "./api";
+import Header from "./components/Header";
+import ChatHistory from "./components/ChatHistory";
+import {Message, Messages} from "./components/ChatHistory/ChatHistory";
+import ChatInput from "./components/ChatInput";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+interface IProps {
+}
+
+interface IState {
+    chatHistory: Messages
+}
+
+class App extends Component<IProps, IState> {
+    constructor(props: IProps) {
+        super(props)
+        this.state = {
+            chatHistory: []
+        }
+    }
+
+    send(event: React.KeyboardEvent<HTMLInputElement>) {
+        if (event.key === 'Enter') {
+            sendMsg(event.currentTarget.value)
+            event.currentTarget.value = "";
+        }
+    }
+
+    componentDidMount(): void {
+        connect((msg: Message) => {
+            console.log("new message")
+            this.setState(prevState => ({
+                chatHistory: [...prevState.chatHistory, msg]
+            }))
+            console.log(this.state)
+        })
+    }
+
+    render() {
+        return (
+            <div className="App">
+                <Header/>
+                <ChatHistory chatHistory={this.state.chatHistory}/>
+                <ChatInput send={this.send}/>
+            </div>
+        );
+    }
 }
 
 export default App;
